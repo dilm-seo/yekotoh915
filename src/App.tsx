@@ -1,21 +1,29 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from 'react-query';
 import { Settings } from './types';
 import { SettingsPanel } from './components/SettingsPanel';
 import { NewsFeed } from './components/NewsFeed';
-import { CurrencyStrengthPanel } from './components/CurrencyStrengthPanel';
+import { CurrencyStrengthChart } from './components/CurrencyStrengthChart';
 import { CorrelationTable } from './components/CorrelationTable';
-import { AnalysisButton } from './components/AnalysisButton';
-import { fetchForexNews } from './services/api';
-import { AlertCircle } from 'lucide-react';
-import { useLocalStorage } from './hooks/useLocalStorage';
-import { useAnalysis } from './hooks/useAnalysis';
+import { ChatBot } from './components/ChatBot';
+import { Header } from './components/Header';
+import { Preloader } from './components/Preloader';
+import { fetchForexNews, analyzeNews } from './services/api';
+import { AlertCircle, Loader2 } from 'lucide-react';
 
 function App() {
-  const [settings, setSettings] = useLocalStorage<Settings>('forex-settings', {
+  const [isLoading, setIsLoading] = useState(true);
+  const [settings, setSettings] = useState<Settings>({
     apiKey: '',
     model: 'gpt-4-turbo-preview',
   });
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const { 
     data: news = [], 
@@ -33,38 +41,44 @@ function App() {
     }
   );
 
-  const {
-    analysis,
-    newsAnalysis,
-    strengths,
-    isLoading: isAnalyzing,
-    error: analysisError,
-    startAnalysis,
-    isReady
-  } = useAnalysis(news, settings);
+  const { 
+    data: analysis, 
+    isLoading: isLoadingAnalysis,
+    error: analysisError
+  } = useQuery(
+    ['analysis', news, settings],
+    () => analyzeNews(news, settings),
+    { 
+      enabled: news.length > 0 && !!settings.apiKey,
+      retry: 2,
+      retryDelay: 1000,
+      onError: (error) => console.error('Error analyzing news:', error)
+    }
+  );
 
   const error = newsError || analysisError;
+  const isContentLoading = isLoadingNews || isLoadingAnalysis;
+
+  if (isLoading) {
+    return <Preloader />;
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">
-          Analyse Forex Live
-        </h1>
-
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+      <Header />
+      
+      <main className="max-w-8xl mx-auto px-4 py-8">
         {error && (
-          <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <AlertCircle className="h-5 w-5 text-red-400" />
-              </div>
-              <div className="ml-3">
-                <p className="text-sm text-red-700">
+          <div className="glass-panel p-4 mb-8 border-red-500/30">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-red-400 mt-0.5" />
+              <div>
+                <p className="text-red-200">
                   {error instanceof Error ? error.message : 'Une erreur est survenue'}
                 </p>
                 <button
                   onClick={() => refetchNews()}
-                  className="mt-2 text-sm text-red-600 hover:text-red-800 font-medium"
+                  className="mt-2 text-sm text-red-400 hover:text-red-300"
                 >
                   Réessayer
                 </button>
@@ -73,43 +87,52 @@ function App() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-1">
-            <SettingsPanel
-              settings={settings}
-              onSettingsChange={setSettings}
-            />
-            <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-              <AnalysisButton
-                onAnalyze={startAnalysis}
-                isLoading={isAnalyzing}
-                disabled={!isReady}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="lg:col-span-3 space-y-8">
+            <div className="gradient-border animate-glow">
+              <SettingsPanel
+                settings={settings}
+                onSettingsChange={setSettings}
               />
             </div>
-            {strengths && strengths.length > 0 && (
-              <CurrencyStrengthPanel
-                strengths={strengths}
-              />
+
+            {analysis?.strengths && (
+              <div className="glass-panel p-6">
+                <CurrencyStrengthChart
+                  strengths={analysis.strengths}
+                />
+              </div>
             )}
           </div>
 
-          <div className="lg:col-span-2">
-            <div className="space-y-8">
-              <NewsFeed
-                news={news}
-                analysis={newsAnalysis}
-                isLoading={isLoadingNews}
-              />
-              
-              {analysis?.correlations.length > 0 && (
-                <CorrelationTable
-                  correlations={analysis.correlations}
-                />
-              )}
-            </div>
+          <div className="lg:col-span-9 space-y-8">
+            {isContentLoading ? (
+              <div className="flex items-center justify-center h-64">
+                <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
+              </div>
+            ) : (
+              <>
+                <div className="glass-panel p-6">
+                  <NewsFeed
+                    news={news}
+                    isLoading={isLoadingNews}
+                  />
+                </div>
+                
+                {analysis?.correlations && (
+                  <div className="glass-panel p-6">
+                    <CorrelationTable
+                      correlations={analysis.correlations}
+                    />
+                  </div>
+                )}
+
+                <ChatBot settings={settings} />
+              </>
+            )}
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

@@ -1,3 +1,51 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-100;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-gray-900/40 backdrop-blur-lg border border-gray-700/50 rounded-2xl;
+  }
+  
+  .glass-button {
+    @apply px-6 py-3 bg-blue-600/20 hover:bg-blue-600/30 backdrop-blur-sm border border-blue-500/30 
+           rounded-xl transition-all duration-300 text-blue-100 font-medium;
+  }
+
+  .gradient-border {
+    @apply relative rounded-2xl p-[1px] bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500;
+  }
+
+  .gradient-border > * {
+    @apply bg-gray-900 rounded-2xl;
+  }
+
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+
+  @keyframes glow {
+    from {
+      box-shadow: 0 0 10px theme('colors.blue.500/20'),
+                 0 0 20px theme('colors.purple.500/20');
+    }
+    to {
+      box-shadow: 0 0 20px theme('colors.blue.500/40'),
+                 0 0 40px theme('colors.purple.500/40');
+    }
+  }
+
+  .delay-150 {
+    animation-delay: 150ms;
+  }
+
+  .delay-300 {
+    animation-delay: 300ms;
+  }
+}

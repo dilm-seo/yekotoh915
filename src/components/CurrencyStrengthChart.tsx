@@ -1,6 +1,6 @@
 import React from 'react';
 import { CurrencyStrength } from '../types';
-import { TrendingUp, Info, ChevronDown, ChevronUp, Minus, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
+import { TrendingUp, ChevronDown, ChevronUp, Minus } from 'lucide-react';
 
 interface CurrencyStrengthChartProps {
   strengths: CurrencyStrength[];
@@ -8,80 +8,52 @@ interface CurrencyStrengthChartProps {
 
 export function CurrencyStrengthChart({ strengths }: CurrencyStrengthChartProps) {
   const sortedStrengths = [...strengths].sort((a, b) => b.strength - a.strength);
-  const strongest = sortedStrengths[0];
-  const weakest = sortedStrengths[sortedStrengths.length - 1];
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
-      <div className="flex items-center gap-2 mb-6">
-        <TrendingUp className="w-5 h-5 text-blue-600" />
-        <h2 className="text-xl font-semibold text-gray-800">Force des Devises</h2>
+    <div className="space-y-6">
+      <div className="flex items-center gap-3">
+        <div className="relative">
+          <div className="absolute inset-0 bg-pink-500/20 blur-lg rounded-full"></div>
+          <TrendingUp className="w-6 h-6 text-pink-400 relative" />
+        </div>
+        <h2 className="text-xl font-semibold text-gray-100">Force des Devises</h2>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mb-8">
-        <div className="bg-green-50 rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <ArrowUpCircle className="w-5 h-5 text-green-600" />
-            <h3 className="font-medium text-green-800">Plus forte</h3>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-green-700">{strongest.currency}</span>
-            <span className="text-sm text-green-600">
-              ({(strongest.strength * 100).toFixed(1)}%)
-            </span>
-          </div>
-        </div>
-
-        <div className="bg-red-50 rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <ArrowDownCircle className="w-5 h-5 text-red-600" />
-            <h3 className="font-medium text-red-800">Plus faible</h3>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-red-700">{weakest.currency}</span>
-            <span className="text-sm text-red-600">
-              ({(weakest.strength * 100).toFixed(1)}%)
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-6">
-        {strengths.map((currency) => (
+      <div className="space-y-4">
+        {sortedStrengths.map((currency) => (
           <div key={currency.currency} className="space-y-2">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <span className="font-medium text-gray-700">{currency.currency}</span>
-                {currency.sentiment === 'bullish' && <ChevronUp className="w-4 h-4 text-green-600" />}
-                {currency.sentiment === 'bearish' && <ChevronDown className="w-4 h-4 text-red-600" />}
-                {currency.sentiment === 'neutral' && <Minus className="w-4 h-4 text-gray-600" />}
+                <span className="text-lg font-medium text-gray-100">{currency.currency}</span>
+                {currency.sentiment === 'bullish' && (
+                  <ChevronUp className="w-4 h-4 text-green-400" />
+                )}
+                {currency.sentiment === 'bearish' && (
+                  <ChevronDown className="w-4 h-4 text-red-400" />
+                )}
+                {currency.sentiment === 'neutral' && (
+                  <Minus className="w-4 h-4 text-gray-400" />
+                )}
               </div>
-              <span className={`text-sm font-medium ${
-                currency.sentiment === 'bullish' ? 'text-green-600' :
-                currency.sentiment === 'bearish' ? 'text-red-600' :
-                'text-gray-600'
+              <span className={`text-sm font-medium px-2 py-1 rounded-full ${
+                currency.sentiment === 'bullish' ? 'bg-green-500/20 text-green-400' :
+                currency.sentiment === 'bearish' ? 'bg-red-500/20 text-red-400' :
+                'bg-gray-500/20 text-gray-400'
               }`}>
-                {currency.sentiment === 'bullish' ? 'HAUSSIER' :
-                 currency.sentiment === 'bearish' ? 'BAISSIER' :
-                 'NEUTRE'}
+                {(currency.strength * 100).toFixed(1)}%
               </span>
             </div>
             
-            <div className="w-full bg-gray-200 rounded-full h-2.5">
+            <div className="relative h-2 bg-gray-700/50 rounded-full overflow-hidden">
               <div
-                className={`h-2.5 rounded-full ${
-                  currency.sentiment === 'bullish' ? 'bg-green-600' :
-                  currency.sentiment === 'bearish' ? 'bg-red-600' :
-                  'bg-gray-600'
+                className={`absolute left-0 top-0 h-full rounded-full ${
+                  currency.sentiment === 'bullish' ? 'bg-gradient-to-r from-green-500/50 to-green-400' :
+                  currency.sentiment === 'bearish' ? 'bg-gradient-to-r from-red-500/50 to-red-400' :
+                  'bg-gradient-to-r from-gray-500/50 to-gray-400'
                 }`}
                 style={{ width: `${Math.abs(currency.strength * 100)}%` }}
-              ></div>
-            </div>
-
-            <div className="mt-2 text-sm text-gray-600 bg-gray-50 rounded-md p-3">
-              <div className="flex items-start gap-2">
-                <Info className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                <p className="leading-relaxed">{currency.rationale}</p>
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/10"></div>
               </div>
             </div>
           </div>

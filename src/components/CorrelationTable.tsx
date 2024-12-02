@@ -1,6 +1,6 @@
 import React from 'react';
 import { Correlation } from '../types';
-import { GitCompare, Info } from 'lucide-react';
+import { GitCompare } from 'lucide-react';
 
 interface CorrelationTableProps {
   correlations: Correlation[];
@@ -8,53 +8,57 @@ interface CorrelationTableProps {
 
 export function CorrelationTable({ correlations }: CorrelationTableProps) {
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
-      <div className="flex items-center gap-2 mb-6">
-        <GitCompare className="w-5 h-5 text-blue-600" />
-        <h2 className="text-xl font-semibold text-gray-800">Corrélations des Paires</h2>
+    <div className="space-y-6">
+      <div className="flex items-center gap-3">
+        <div className="relative">
+          <div className="absolute inset-0 bg-blue-500/20 blur-lg rounded-full"></div>
+          <GitCompare className="w-6 h-6 text-blue-400 relative" />
+        </div>
+        <h2 className="text-xl font-semibold text-gray-100">Corrélations</h2>
       </div>
 
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
+        <table className="w-full">
           <thead>
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <tr className="border-b border-gray-700/50">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                 Paire 1
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                 Paire 2
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                 Corrélation
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                 Recommandation
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Analyse
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="divide-y divide-gray-700/30">
             {correlations.map((correlation, index) => (
-              <tr key={index}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+              <tr key={index} className="hover:bg-gray-800/30 transition-colors">
+                <td className="px-6 py-4 text-sm font-medium text-gray-100">
                   {correlation.pair1}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-6 py-4 text-sm text-gray-300">
                   {correlation.pair2}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {(correlation.strength * 100).toFixed(1)}%
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {correlation.recommendation}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-500 relative group">
-                  <Info className="w-4 h-4 text-gray-400 cursor-help" />
-                  <div className="absolute left-0 top-full mt-2 hidden group-hover:block w-64 p-2 bg-gray-800 text-white text-sm rounded-md shadow-lg z-10">
-                    {correlation.rationale}
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-24 h-2 bg-gray-700/50 rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-blue-500/50 to-blue-400"
+                        style={{ width: `${Math.abs(correlation.strength * 100)}%` }}
+                      />
+                    </div>
+                    <span className="text-sm text-gray-400">
+                      {(correlation.strength * 100).toFixed(1)}%
+                    </span>
                   </div>
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-300">
+                  {correlation.recommendation}
                 </td>
               </tr>
             ))}
