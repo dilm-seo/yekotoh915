@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Settings } from '../types';
-import { Settings as SettingsIcon, Save, Key } from 'lucide-react';
+import { Settings as SettingsIcon, Save } from 'lucide-react';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 
 interface SettingsPanelProps {
   settings: Settings;
@@ -8,6 +9,7 @@ interface SettingsPanelProps {
 }
 
 export function SettingsPanel({ settings, onSettingsChange }: SettingsPanelProps) {
+  const [localSettings, setLocalSettings] = useLocalStorage<Settings>('forex-settings', settings);
   const [isDirty, setIsDirty] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
 
@@ -18,49 +20,43 @@ export function SettingsPanel({ settings, onSettingsChange }: SettingsPanelProps
   };
 
   const handleSave = () => {
-    localStorage.setItem('forex-settings', JSON.stringify(settings));
+    setLocalSettings(settings);
     setIsDirty(false);
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 2000);
   };
 
   return (
-    <div className="p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="relative">
-          <div className="absolute inset-0 bg-purple-500/20 blur-lg rounded-full"></div>
-          <SettingsIcon className="w-6 h-6 text-purple-400 relative" />
-        </div>
-        <h2 className="text-xl font-semibold text-gray-100">Configuration</h2>
+    <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+      <div className="flex items-center gap-2 mb-4">
+        <SettingsIcon className="w-5 h-5 text-blue-600" />
+        <h2 className="text-xl font-semibold text-gray-800">Configuration</h2>
       </div>
       
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div>
-          <label className="flex items-center gap-2 text-sm font-medium text-gray-300 mb-2">
-            <Key className="w-4 h-4" />
+          <label htmlFor="apiKey" className="block text-sm font-medium text-gray-700 mb-1">
             Clé API OpenAI
           </label>
           <input
             type="password"
+            id="apiKey"
             value={settings.apiKey}
             onChange={(e) => handleChange('apiKey', e.target.value)}
-            className="w-full px-4 py-2.5 bg-gray-800/50 border border-gray-700/50 rounded-xl 
-                     text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 
-                     focus:ring-blue-500/30 transition-all duration-200"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
             placeholder="sk-..."
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">
+          <label htmlFor="model" className="block text-sm font-medium text-gray-700 mb-1">
             Modèle OpenAI
           </label>
           <select
+            id="model"
             value={settings.model}
             onChange={(e) => handleChange('model', e.target.value)}
-            className="w-full px-4 py-2.5 bg-gray-800/50 border border-gray-700/50 rounded-xl 
-                     text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500/30 
-                     transition-all duration-200"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="gpt-4-turbo-preview">GPT-4 Turbo</option>
             <option value="gpt-4">GPT-4</option>
@@ -71,12 +67,14 @@ export function SettingsPanel({ settings, onSettingsChange }: SettingsPanelProps
         <button
           onClick={handleSave}
           disabled={!isDirty}
-          className={`glass-button w-full flex items-center justify-center gap-2 ${
-            !isDirty && 'opacity-50 cursor-not-allowed'
+          className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-md text-white font-medium transition-colors ${
+            isDirty 
+              ? 'bg-blue-600 hover:bg-blue-700' 
+              : 'bg-gray-400 cursor-not-allowed'
           }`}
         >
           <Save className="w-4 h-4" />
-          {isSaved ? 'Configuration sauvegardée!' : 'Sauvegarder'}
+          {isSaved ? 'Paramètres sauvegardés!' : 'Sauvegarder les paramètres'}
         </button>
       </div>
     </div>
